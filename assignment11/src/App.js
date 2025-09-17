@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import EmployeeForm from "./components/EmployeeForm";
 
-const API_URL = "http://localhost:3001/employees";
+const API_URL = "http://localhost:3000/employees";
 
 const App = () => {
   const [employees, setEmployees] = useState([]);
