@@ -9,6 +9,7 @@ const API_URL = "http://localhost:3000/employees";
 const App = () => {
   const [employees, setEmployees] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null); // New
 
   // Fetch employees
   useEffect(() => {
@@ -19,40 +20,82 @@ const App = () => {
   }, []);
 
   // Add new employee
-  const addEmployee = async (emp) => {
-    if (employees.find((e) => e.id === emp.id || e.email === emp.email)) {
-      return alert("ID and Email must be unique!");
-    }
+const addEmployee = async (emp) => {
+  emp.id = Number(emp.id); // force numeric ID
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(emp),
-      });
-      const saved = await res.json();
-      setEmployees((prev) => [...prev, saved]);
-      setShowForm(false);
-    } catch (err) {
-      console.error("Add error:", err);
-    }
-  };
+  if (employees.find((e) => e.id === emp.id || e.email === emp.email)) {
+    return alert("ID and Email must be unique!");
+  }
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(emp),
+    });
+    const saved = await res.json();
+    setEmployees((prev) => [...prev, saved]);
+    setShowForm(false);
+  } catch (err) {
+    console.error("Add error:", err);
+  }
+};
 
   // Delete employee
-  const deleteEmployee = (id) =>
+  const deleteEmployee = async (id) => {
+  try {
+    await fetch(`${API_URL}/${id}`, {
+      method: "DELETE",
+    });
     setEmployees((prev) => prev.filter((e) => e.id !== id));
+  } catch (err) {
+    console.error("Delete error:", err);
+  }
+};
+  // Start editing
+  const editEmployee = (emp) => {
+    setEditingEmployee(emp);
+    setShowForm(true);
+  };
 
+  // Update employee
+  const updateEmployee = async (updatedEmp) => {
+  updatedEmp.id = Number(updatedEmp.id); // normalize ID
+
+  try {
+    const res = await fetch(`${API_URL}/${updatedEmp.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedEmp),
+    });
+
+    const saved = await res.json(); // get latest from server
+
+    setEmployees((prev) =>
+      prev.map((e) => (e.id === saved.id ? saved : e))
+    );
+    setEditingEmployee(null);
+    setShowForm(false);
+  } catch (err) {
+    console.error("Update error:", err);
+  }
+
+};
   return (
     <div className="d-flex flex-column min-vh-100">
       <Navbar />
 
       <div className="container my-5 flex-grow-1">
         {showForm ? (
-          <EmployeeForm addEmployee={addEmployee} />
+          <EmployeeForm
+            addEmployee={addEmployee}
+            updateEmployee={updateEmployee}
+            editingEmployee={editingEmployee}
+          />
         ) : (
           <>
             <button
-              className="btn btn-primary mb-3"
+              className="btn-mb-3"
               onClick={() => setShowForm(true)}
             >
               Add Employee
@@ -75,7 +118,13 @@ const App = () => {
                     <td>{email}</td>
                     <td>
                       <button
-                        className="btn btn-danger btn-sm"
+                        className="btn-sm me-2"
+                        onClick={() => editEmployee({ id, name, email })}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn-sm"
                         onClick={() => deleteEmployee(id)}
                       >
                         Delete

@@ -1,9 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const EmployeeForm = ({ addEmployee }) => {
+const EmployeeForm = ({ addEmployee, updateEmployee, editingEmployee }) => {
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingEmployee) {
+      setId(editingEmployee.id);
+      setName(editingEmployee.name);
+      setEmail(editingEmployee.email);
+    }
+  }, [editingEmployee]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -11,7 +20,15 @@ const EmployeeForm = ({ addEmployee }) => {
       alert("All fields are required!");
       return;
     }
-    addEmployee({ id: parseInt(id), name, email });
+
+    const empData = { id: parseInt(id), name, email };
+
+    if (editingEmployee) {
+      updateEmployee(empData);
+    } else {
+      addEmployee(empData);
+    }
+
     setId("");
     setName("");
     setEmail("");
@@ -19,7 +36,7 @@ const EmployeeForm = ({ addEmployee }) => {
 
   return (
     <form onSubmit={handleSubmit} className="border p-3">
-      <h3>Add Employee</h3>
+      <h3>{editingEmployee ? "Edit Employee" : "Add Employee"}</h3>
       <div className="mb-3">
         <label>ID:</label>
         <input
@@ -28,6 +45,7 @@ const EmployeeForm = ({ addEmployee }) => {
           value={id}
           onChange={(e) => setId(e.target.value)}
           required
+          disabled={!!editingEmployee} // Cannot change ID while editing
         />
       </div>
 
@@ -53,8 +71,8 @@ const EmployeeForm = ({ addEmployee }) => {
         />
       </div>
 
-      <button type="submit" className="btn btn-success">
-        Submit
+      <button type="submit" className="btn-me-2">
+        {editingEmployee ? "Update" : "Submit"}
       </button>
     </form>
   );

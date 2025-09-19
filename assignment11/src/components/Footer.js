@@ -1,11 +1,12 @@
 import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-const Footer = () => {
+const Navbar = () => {
   return (
-    <footer className="bg-light text-center py-3 mt-auto">
-      <small>Copyrights reserved @2025</small>
-    </footer>
+    <nav className="navbar navbar-expand-lg navbar-light bg-light px-3">
+      <a className="navbar-brand" href="/">EmployeeApp</a>
+    </nav>
   );
 };
 
-export default Footer;
+export default Navbar;
